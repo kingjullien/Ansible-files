@@ -1,0 +1,30 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Installs nginx web server
+      apt: name=nginx state=latest
+
+    - name: start nginx 
+      service:
+          name: nginx
+          state: started
+
+    - name: add apt key for nodesource
+      apt_key: url=https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+
+    - name: add repo for nodesource
+      shell: curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash - && sudo apt-get install -y nodejs   
+      
+    - name: install nodejs
+      apt: name=nodejs
+
+    - name: install NPM
+      shell: npm i
+      args:
+           chdir: /home/vagrant
+
+    - name: Install PM2
+      npm:
+        name: pm2
+        global: yes
