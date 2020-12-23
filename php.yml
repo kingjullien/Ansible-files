@@ -1,13 +1,6 @@
 ---
 - hosts: all
   become: yes
- # tasks:
- #   - name: install apache2
- #     apt: name=apache2 update_cache=yes state=latest
-
-#  handlers:
-#    - name: restart apache2
-#     service: name=apache2 state=restarted
   tasks:
     - name: Install prerequisites
       apt: name={{ item }} update_cache=yes state=latest force_apt_get=yes
@@ -15,19 +8,13 @@
     - name: Install LAMP Packages
       apt: name={{ item }} update_cache=yes state=latest
       loop: ['apache2', 'mysql-server', 'python-pymysql', 'python3-pymysql', 'python-apt', 'python3-apt', 'php', 'php-mysql', 'libapache2-mod-php' ]
- # MySQL Configuration
+ 
+  # MySQL Configuration
     - name: Sets the root password
       mysql_user:
         name: root
         password: 'Google.com@123'
-        check_implicit_admin=yes
-        priv="*.*:ALL,GRANT"
         login_unix_socket: /var/run/mysqld/mysqld.sock
-        with_items:
-           - "{{ current_hostname.stdout }}"        
-           - "127.0.0.1"
-           - "%"
-           - "localhost"
 
     - name: Removes all anonymous user accounts
       mysql_user:
@@ -43,12 +30,14 @@
         state: absent
         login_user: root
         login_password: "Google.com@123" 
-
-  # PHP Info Page
-    - name: Sets Up PHP Info Page
-      template:
-        src: "vagrant_site/info.php"
+    
+    - name: Create Php Files
+      copy:
         dest: "/var/www/html/info.php"
+        content: |
+           <?php phpinfo(); ?>
 
-    - name: Restarting Apache2
-      command: '/etc/init.d/apache2 restart'              
+    - name: Restart Apache
+      service:
+        name: apache2
+                                          
